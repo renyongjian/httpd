@@ -11,15 +11,20 @@ int get_line(int socket,char *buff)
 	return 0;
 }
 
+/*reply 404*/
 int reply_not_found(int socket)
 {
 	return 0;
 }
 
+/*reply 500*/
 int reply_internal_server(int socket)
 {
 	return 0;
 }
+
+
+
 
 int accept_request(int socket)
 {
@@ -55,11 +60,14 @@ int accept_request(int socket)
 		if (query != NULL)
 		{
 			query++;
+			debug("query=%s",query);
 			need_do_cgi=1;
 		}
 		else
 		{
 			/*get file path*/
+			path = strstr(data_str+10,'/');
+			debug("path=%s",path);
 		}
 	}
 
