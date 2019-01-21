@@ -7,7 +7,8 @@
 #define debug( format, args... )do {fprintf(stderr,  "DEBUG >>> %s->%s()->line.%d : " format "\n", __FILE__, __FUNCTION__, __LINE__, ##args);}while(0)
 #endif
 
-int get_line(int socket,char *buff)
+/*len is the buff max len,return the real len*/
+int get_line(int socket,char *buff,int len)
 {
 	debug("get_line ...");
 	strcpy(buff,"GET /voip/SIP_Account1.asp");
@@ -48,7 +49,7 @@ int execute_cgi(int socket,char *path,char *method,char *query)
 }
 
 
-int accept_request(int socket)
+int accept_request(int client)
 {
 	char buff[MAX_RECV_BUFF_LEN]="";
 	int need_do_cgi = 0;
@@ -57,7 +58,7 @@ int accept_request(int socket)
 	char *path = NULL;
 	char *method = NULL;
 
-	get_line(socket,buff);
+	get_line(client,buff,MAX_RECV_BUFF_LEN);
 
 	/*ignore spaces in buff*/
 	data_str = buff;
@@ -67,7 +68,7 @@ int accept_request(int socket)
 	/*post or get recved*/
 	if(strcasestr(data_str,"post")==NULL  && strcasestr(data_str,"get")==NULL)
 	{
-		reply_not_found(socket);
+		reply_not_found(client);
 		return -1;
 	}
 
@@ -101,17 +102,17 @@ int accept_request(int socket)
 	/*if can't excute,reply 503*/
 	if(need_do_cgi)
 	{
-		if(execute_cgi(socket,path,method,query) < 0)
+		if(execute_cgi(client,path,method,query) < 0)
 		{
-			reply_internal_server(socket);
+			reply_internal_server(client);
 			return -1;
 		}
 	}
 	else
 	{
-		if(serve_file(socket,path))
+		if(serve_file(client,path))
 		{
-			reply_not_found(socket);
+			reply_not_found(client);
 			return -1;
 		}
 	}
